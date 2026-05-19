@@ -22,6 +22,8 @@ docker compose up -d
 corepack pnpm dev
 ```
 
+Setup do Supabase dev: [docs/supabase-dev-setup.md](docs/supabase-dev-setup.md)
+
 ## Comandos
 
 ```bash

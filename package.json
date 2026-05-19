@@ -14,12 +14,17 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\""
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "supabase:link": "supabase link"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",
     "eslint": "9.39.1",
     "prettier": "3.6.2",
+    "supabase": "2.100.1",
     "turbo": "2.6.1",
     "typescript": "5.9.3",
     "typescript-eslint": "8.46.2"
