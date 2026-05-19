@@ -19,6 +19,8 @@ Depois que o projeto existir, preencha:
 ```env
 SUPABASE_PROJECT_REF=
 SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
 SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 SUPABASE_JWT_SECRET=
@@ -51,6 +53,12 @@ Com login feito:
 
 ```bash
 pnpm supabase:link --project-ref seu_project_ref
+```
+
+Se preferir informar a senha do banco no mesmo comando:
+
+```bash
+pnpm supabase:link --project-ref seu_project_ref --password sua_senha_do_banco
 ```
 
 ## Uso local opcional
