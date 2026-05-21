@@ -51,12 +51,18 @@ Do not switch the repo to npm or yarn.
 
 ## Current Apps
 
-There are no runtime apps yet.
+Runtime apps:
+
+- `apps/api`: minimal Fastify API with `GET /health`
+- `apps/workers`: minimal long-running background process
 
 Planned apps:
 
 - `apps/web`: Next.js dashboard, landing page and admin
-- `apps/api`: Fastify public/internal API
+
+Planned evolution:
+
+- `apps/api`: public/internal API routes
 - `apps/workers`: BullMQ workers for video generation, webhooks and billing
 
 ## Database

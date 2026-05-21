@@ -4,9 +4,9 @@ SaaS B2B de geracao de videos por API, com arquitetura preparada para dashboard 
 
 ## Status atual
 
-Fundacao do monorepo criada com Turborepo, pnpm workspaces, TypeScript, ESLint, Prettier, Docker local, Supabase dev config, CI no GitHub Actions e pacote de database com Prisma.
+Fundacao do monorepo criada com Turborepo, pnpm workspaces, TypeScript, ESLint, Prettier, Docker local, Supabase dev config, CI no GitHub Actions, pacote de database com Prisma e apps minimos de API e workers.
 
-Ainda nao existem os apps `web`, `api` e `workers`. Eles entram nas proximas fases.
+Ainda nao existe o app `web`. Ele entra nas proximas fases.
 
 ## Requisitos
 
@@ -72,7 +72,9 @@ Tabelas base da primeira migration:
 ## Estrutura
 
 ```text
-apps/                    # web, api e workers entram nas proximas fases
+apps/                    # aplicativos do monorepo
+apps/api                 # Fastify API minima com healthcheck
+apps/workers             # processo minimo de workers/background jobs
 packages/config-ts       # bases compartilhadas de TypeScript
 packages/config-eslint   # base compartilhada de ESLint
 packages/database        # Prisma schema, migrations e client compartilhado
