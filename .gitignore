@@ -131,6 +131,9 @@ dist
 # Turborepo
 .turbo/
 
+# Prisma
+packages/database/src/generated/
+
 # yarn v3
 .pnp.*
 .yarn/*

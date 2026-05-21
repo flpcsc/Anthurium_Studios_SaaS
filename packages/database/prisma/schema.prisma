@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrganizationMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum VideoJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELED
+}
+
+enum UsageEventType {
+  API_REQUEST
+  VIDEO_GENERATION
+  VIDEO_STORAGE
+}
+
+enum BillingSubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  PAUSED
+}
+
+model Organization {
+  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  slug                String               @unique
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  apiKeys             ApiKey[]
+  billingSubscription BillingSubscription?
+  members             OrganizationMember[]
+  projects            Project[]
+  usageEvents         UsageEvent[]
+  videoJobs           VideoJob[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String                 @map("organization_id") @db.Uuid
+  userId         String                 @map("user_id") @db.Uuid
+  role           OrganizationMemberRole @default(MEMBER)
+  createdAt      DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@map("organization_members")
+}
+
+model Project {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String        @map("organization_id") @db.Uuid
+  name           String
+  slug           String
+  status         ProjectStatus @default(ACTIVE)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  apiKeys        ApiKey[]
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  usageEvents    UsageEvent[]
+  videoJobs      VideoJob[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, status])
+  @@map("projects")
+}
+
+model ApiKey {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  projectId      String?      @map("project_id") @db.Uuid
+  name           String
+  keyPrefix      String       @map("key_prefix")
+  keyHash        String       @unique @map("key_hash")
+  status         ApiKeyStatus @default(ACTIVE)
+  lastUsedAt     DateTime?    @map("last_used_at") @db.Timestamptz(6)
+  expiresAt      DateTime?    @map("expires_at") @db.Timestamptz(6)
+  revokedAt      DateTime?    @map("revoked_at") @db.Timestamptz(6)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project        Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status])
+  @@index([projectId])
+  @@map("api_keys")
+}
+
+model VideoJob {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId    String         @map("organization_id") @db.Uuid
+  projectId         String         @map("project_id") @db.Uuid
+  status            VideoJobStatus @default(QUEUED)
+  provider          String?
+  externalJobId     String?        @map("external_job_id")
+  requestedByUserId String?        @map("requested_by_user_id") @db.Uuid
+  input             Json
+  output            Json?
+  errorCode         String?        @map("error_code")
+  errorMessage      String?        @map("error_message")
+  completedAt       DateTime?      @map("completed_at") @db.Timestamptz(6)
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  organization      Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project           Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  usageEvents       UsageEvent[]
+
+  @@index([organizationId, status, createdAt])
+  @@index([projectId, status])
+  @@index([externalJobId])
+  @@map("video_jobs")
+}
+
+model UsageEvent {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String         @map("organization_id") @db.Uuid
+  projectId      String?        @map("project_id") @db.Uuid
+  videoJobId     String?        @map("video_job_id") @db.Uuid
+  type           UsageEventType
+  quantity       Int
+  unit           String
+  metadata       Json?
+  occurredAt     DateTime       @default(now()) @map("occurred_at") @db.Timestamptz(6)
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project        Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  videoJob       VideoJob?      @relation(fields: [videoJobId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, occurredAt])
+  @@index([projectId, occurredAt])
+  @@index([videoJobId])
+  @@map("usage_events")
+}
+
+model BillingSubscription {
+  id                   String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId       String                    @unique @map("organization_id") @db.Uuid
+  stripeCustomerId     String                    @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?                   @unique @map("stripe_subscription_id")
+  status               BillingSubscriptionStatus
+  currentPeriodStart   DateTime?                 @map("current_period_start") @db.Timestamptz(6)
+  currentPeriodEnd     DateTime?                 @map("current_period_end") @db.Timestamptz(6)
+  cancelAtPeriodEnd    Boolean                   @default(false) @map("cancel_at_period_end")
+  createdAt            DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  organization         Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("billing_subscriptions")
+}
