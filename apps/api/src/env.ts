@@ -41,6 +41,23 @@ function getPort(): number {
   return port;
 }
 
+function getCorsOrigins(appUrl: string): string[] {
+  const origins = (process.env.API_CORS_ORIGINS ?? appUrl)
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (origins.includes("http://localhost:3000")) {
+    origins.push("http://127.0.0.1:3000");
+  }
+
+  if (origins.includes("http://127.0.0.1:3000")) {
+    origins.push("http://localhost:3000");
+  }
+
+  return [...new Set(origins)];
+}
+
 export function getEnv(): ApiEnv {
   const appUrl = process.env.APP_URL ?? "http://localhost:3000";
 
@@ -50,9 +67,6 @@ export function getEnv(): ApiEnv {
     supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || required("SUPABASE_ANON_KEY"),
     supabaseSecretKey: process.env.SUPABASE_SECRET_KEY || required("SUPABASE_SERVICE_ROLE_KEY"),
     appUrl,
-    apiCorsOrigins: (process.env.API_CORS_ORIGINS ?? appUrl)
-      .split(",")
-      .map((origin) => origin.trim())
-      .filter(Boolean),
+    apiCorsOrigins: getCorsOrigins(appUrl),
   };
 }
