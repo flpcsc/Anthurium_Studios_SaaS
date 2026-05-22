@@ -29,6 +29,19 @@ DATABASE_URL=
 
 Esses valores ficam no dashboard do Supabase em **Project Settings**.
 
+Para desenvolvimento compartilhado entre maquinas diferentes, use a connection string
+do **Transaction pooler** em vez da conexao direta. A conexao direta pode depender de
+IPv6, enquanto o pooler e IPv4 compatible.
+
+Formato usado neste projeto:
+
+```env
+DATABASE_URL=postgresql://postgres.irbztuvwjxyrcdzrwrwq:[YOUR-PASSWORD]@aws-1-sa-east-1.pooler.supabase.com:6543/postgres?schema=public
+```
+
+Substitua `[YOUR-PASSWORD]` pela senha do banco do Supabase. Se a senha tiver
+caracteres especiais como `@`, `#`, `%`, `/` ou `:`, ela precisa ser URL-encoded.
+
 ## Login da CLI
 
 Crie um access token em:
