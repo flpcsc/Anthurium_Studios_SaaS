@@ -1,5 +1,7 @@
+import cors from "@fastify/cors";
 import Fastify from "fastify";
 import type { FastifyInstance } from "fastify";
+import { pathToFileURL } from "node:url";
 import { getEnv } from "./env.js";
 import { HttpError, sendError } from "./http/errors.js";
 import { registerAuthRoutes } from "./modules/auth/auth.routes.js";
@@ -13,11 +15,32 @@ interface HealthResponse {
   service: "api";
 }
 
+function getStatusCode(error: unknown): number {
+  if (
+    error &&
+    typeof error === "object" &&
+    "statusCode" in error &&
+    typeof error.statusCode === "number"
+  ) {
+    return error.statusCode;
+  }
+
+  return 500;
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Request failed.";
+}
+
 export function buildServer(): FastifyInstance {
   const env = getEnv();
   const authClient = new SupabaseAuthClient(env);
   const server = Fastify({
     logger: true,
+  });
+
+  void server.register(cors, {
+    origin: env.apiCorsOrigins,
   });
 
   server.setErrorHandler((error, _request, reply) => {
@@ -26,16 +49,9 @@ export function buildServer(): FastifyInstance {
       return;
     }
 
-    const fastifyError = error as { statusCode?: number; message?: string };
-    const statusCode =
-      typeof fastifyError.statusCode === "number"
-        ? fastifyError.statusCode
-        : 500;
+    const statusCode = getStatusCode(error);
     const code = statusCode === 500 ? "INTERNAL_SERVER_ERROR" : "REQUEST_ERROR";
-    const message =
-      statusCode === 500
-        ? "Internal server error."
-        : (fastifyError.message ?? "Request failed.");
+    const message = statusCode === 500 ? "Internal server error." : getErrorMessage(error);
 
     if (statusCode === 500) {
       server.log.error(error);
@@ -67,4 +83,6 @@ async function main(): Promise<void> {
   }
 }
 
-await main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await main();
+}

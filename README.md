@@ -4,9 +4,7 @@ SaaS B2B de geracao de videos por API, com arquitetura preparada para dashboard 
 
 ## Status atual
 
-Fundacao do monorepo criada com Turborepo, pnpm workspaces, TypeScript, ESLint, Prettier, Docker local, Supabase dev config, CI no GitHub Actions, pacote de database com Prisma e apps minimos de API e workers.
-
-Ainda nao existe o app `web`. Ele entra nas proximas fases.
+Fundacao do monorepo criada com Turborepo, pnpm workspaces, TypeScript, ESLint, Prettier, Docker local, Supabase dev config, CI no GitHub Actions, pacote de database com Prisma, API Fastify com healthcheck/autenticacao inicial, app web Next.js com telas publicas de auth e app minimo de workers.
 
 ## Requisitos
 
@@ -61,6 +59,7 @@ corepack pnpm --filter @video-saas/database db:studio
 
 Tabelas base da primeira migration:
 
+- `users`
 - `organizations`
 - `organization_members`
 - `projects`
@@ -73,7 +72,8 @@ Tabelas base da primeira migration:
 
 ```text
 apps/                    # aplicativos do monorepo
-apps/api                 # Fastify API minima com healthcheck
+apps/web                 # Next.js dashboard/auth web
+apps/api                 # Fastify API com healthcheck e auth inicial
 apps/workers             # processo minimo de workers/background jobs
 packages/config-ts       # bases compartilhadas de TypeScript
 packages/config-eslint   # base compartilhada de ESLint
@@ -91,10 +91,10 @@ Comece copiando `.env.example` para `.env`.
 
 Grupos principais:
 
-- App: `APP_URL`, `API_URL`
+- App: `APP_URL`, `API_URL`, `NEXT_PUBLIC_API_URL`
 - Database: `DATABASE_URL`
 - Queue/cache: `REDIS_URL`
-- Supabase: `SUPABASE_*`
+- Supabase: `SUPABASE_*`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - Stripe: `STRIPE_*`
 - Cloudflare R2: `R2_*`
 - Observability: `SENTRY_DSN`, `AXIOM_*`

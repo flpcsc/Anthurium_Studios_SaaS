@@ -12,6 +12,7 @@ export interface ApiEnv {
   supabasePublishableKey: string;
   supabaseSecretKey: string;
   appUrl: string;
+  apiCorsOrigins: string[];
 }
 
 function required(name: string): string {
@@ -41,15 +42,17 @@ function getPort(): number {
 }
 
 export function getEnv(): ApiEnv {
+  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+
   return {
     port: getPort(),
     supabaseUrl: required("SUPABASE_URL").replace(/\/$/, ""),
-    supabasePublishableKey:
-      process.env.SUPABASE_PUBLISHABLE_KEY ||
-      required("SUPABASE_ANON_KEY"),
-    supabaseSecretKey:
-      process.env.SUPABASE_SECRET_KEY ||
-      required("SUPABASE_SERVICE_ROLE_KEY"),
-    appUrl: process.env.APP_URL ?? "http://localhost:3000",
+    supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || required("SUPABASE_ANON_KEY"),
+    supabaseSecretKey: process.env.SUPABASE_SECRET_KEY || required("SUPABASE_SERVICE_ROLE_KEY"),
+    appUrl,
+    apiCorsOrigins: (process.env.API_CORS_ORIGINS ?? appUrl)
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean),
   };
 }

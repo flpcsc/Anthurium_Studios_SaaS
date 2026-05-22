@@ -21,31 +21,20 @@ function getBearerToken(request: FastifyRequest): string {
   const header = request.headers.authorization;
 
   if (!header?.startsWith("Bearer ")) {
-    throw new HttpError(
-      401,
-      "UNAUTHORIZED",
-      "Authorization bearer token is required.",
-    );
+    throw new HttpError(401, "UNAUTHORIZED", "Authorization bearer token is required.");
   }
 
   const token = header.slice("Bearer ".length).trim();
 
   if (!token) {
-    throw new HttpError(
-      401,
-      "UNAUTHORIZED",
-      "Authorization bearer token is required.",
-    );
+    throw new HttpError(401, "UNAUTHORIZED", "Authorization bearer token is required.");
   }
 
   return token;
 }
 
 export function createRequireAuth(authClient: SupabaseAuthClient) {
-  return async function requireAuth(
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ): Promise<void> {
+  return async function requireAuth(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     try {
       const accessToken = getBearerToken(request);
       const supabaseUser = await authClient.getUser(accessToken);

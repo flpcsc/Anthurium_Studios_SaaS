@@ -10,10 +10,7 @@ export function asRecord(value: unknown): JsonRecord {
   return value as JsonRecord;
 }
 
-export function optionalString(
-  body: JsonRecord,
-  key: string,
-): string | undefined {
+export function optionalString(body: JsonRecord, key: string): string | undefined {
   const value = body[key];
 
   if (value === undefined || value === null) {

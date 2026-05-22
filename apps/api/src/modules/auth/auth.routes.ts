@@ -44,11 +44,7 @@ function assertEmail(email: string): void {
 
 function assertPassword(password: string): void {
   if (password.length < 8) {
-    throw new HttpError(
-      400,
-      "INVALID_PASSWORD",
-      "Password must have at least 8 characters.",
-    );
+    throw new HttpError(400, "INVALID_PASSWORD", "Password must have at least 8 characters.");
   }
 }
 
@@ -156,11 +152,7 @@ export async function registerAuthRoutes(
     const session = await options.authClient.signUp({ email, password, name });
 
     if (!session.user?.id || !session.user.email) {
-      throw new HttpError(
-        502,
-        "SIGNUP_FAILED",
-        "Supabase did not return a user for this signup.",
-      );
+      throw new HttpError(502, "SIGNUP_FAILED", "Supabase did not return a user for this signup.");
     }
 
     const workspace = await ensureUserWorkspace({
@@ -190,11 +182,7 @@ export async function registerAuthRoutes(
     const session = await options.authClient.login({ email, password });
 
     if (!session.user?.id || !session.user.email) {
-      throw new HttpError(
-        502,
-        "LOGIN_FAILED",
-        "Supabase did not return a user for this login.",
-      );
+      throw new HttpError(502, "LOGIN_FAILED", "Supabase did not return a user for this login.");
     }
 
     const workspace = await ensureUserWorkspace({
@@ -216,15 +204,11 @@ export async function registerAuthRoutes(
     });
   });
 
-  server.post(
-    "/auth/logout",
-    { preHandler: requireAuth },
-    async (request, reply) => {
-      await options.authClient.logout(request.accessToken ?? "");
+  server.post("/auth/logout", { preHandler: requireAuth }, async (request, reply) => {
+    await options.authClient.logout(request.accessToken ?? "");
 
-      return reply.status(204).send();
-    },
-  );
+    return reply.status(204).send();
+  });
 
   server.post("/auth/forgot-password", async (request, reply) => {
     const body = asRecord(request.body);
@@ -236,26 +220,22 @@ export async function registerAuthRoutes(
     return reply.status(204).send();
   });
 
-  server.patch(
-    "/auth/reset-password",
-    { preHandler: requireAuth },
-    async (request, reply) => {
-      const body = asRecord(request.body);
-      const password = requiredString(body, "password");
+  server.patch("/auth/reset-password", { preHandler: requireAuth }, async (request, reply) => {
+    const body = asRecord(request.body);
+    const password = requiredString(body, "password");
 
-      assertPassword(password);
+    assertPassword(password);
 
-      const user = requireCurrentUser(request);
-      await options.authClient.resetPassword({
-        accessToken: request.accessToken ?? "",
-        password,
-      });
+    const user = requireCurrentUser(request);
+    await options.authClient.resetPassword({
+      accessToken: request.accessToken ?? "",
+      password,
+    });
 
-      return reply.send({
-        data: {
-          user,
-        },
-      });
-    },
-  );
+    return reply.send({
+      data: {
+        user,
+      },
+    });
+  });
 }

@@ -1,0 +1,29 @@
+{
+  "name": "@video-saas/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "lint": "eslint .",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "node -e \"console.log('web: no tests yet')\""
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.106.1",
+    "lucide-react": "^1.16.0",
+    "next": "^16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "@video-saas/config-eslint": "workspace:*",
+    "@video-saas/config-ts": "workspace:*",
+    "eslint": "9.39.1",
+    "typescript": "5.9.3"
+  }
+}

@@ -77,11 +77,7 @@ export class SupabaseAuthClient {
     }
 
     if (!("id" in body)) {
-      throw new HttpError(
-        502,
-        "SUPABASE_AUTH_ERROR",
-        "Supabase Auth did not return a user.",
-      );
+      throw new HttpError(502, "SUPABASE_AUTH_ERROR", "Supabase Auth did not return a user.");
     }
 
     return {
@@ -97,21 +93,15 @@ export class SupabaseAuthClient {
     };
   }
 
-  async login(input: {
-    email: string;
-    password: string;
-  }): Promise<SupabaseSessionResponse> {
-    const response = await fetch(
-      `${this.env.supabaseUrl}/auth/v1/token?grant_type=password`,
-      {
-        method: "POST",
-        headers: {
-          apikey: this.env.supabasePublishableKey,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(input),
+  async login(input: { email: string; password: string }): Promise<SupabaseSessionResponse> {
+    const response = await fetch(`${this.env.supabaseUrl}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: {
+        apikey: this.env.supabasePublishableKey,
+        "content-type": "application/json",
       },
-    );
+      body: JSON.stringify(input),
+    });
 
     return readSupabaseResponse<SupabaseSessionResponse>(response);
   }
@@ -144,10 +134,7 @@ export class SupabaseAuthClient {
     await readSupabaseResponse<unknown>(response);
   }
 
-  async resetPassword(input: {
-    accessToken: string;
-    password: string;
-  }): Promise<SupabaseUser> {
+  async resetPassword(input: { accessToken: string; password: string }): Promise<SupabaseUser> {
     const response = await fetch(`${this.env.supabaseUrl}/auth/v1/user`, {
       method: "PUT",
       headers: {
