@@ -45,6 +45,19 @@ enum BillingSubscriptionStatus {
   PAUSED
 }
 
+model User {
+  id             String               @id @db.Uuid
+  email          String               @unique
+  name           String?
+  avatarUrl      String?              @map("avatar_url")
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  memberships    OrganizationMember[]
+  requestedJobs  VideoJob[]
+
+  @@map("users")
+}
+
 model Organization {
   id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                String
@@ -68,6 +81,7 @@ model OrganizationMember {
   role           OrganizationMemberRole @default(MEMBER)
   createdAt      DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
   organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, userId])
   @@index([userId])
@@ -129,10 +143,12 @@ model VideoJob {
   updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
   organization      Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   project           Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requestedByUser   User?          @relation(fields: [requestedByUserId], references: [id], onDelete: SetNull)
   usageEvents       UsageEvent[]
 
   @@index([organizationId, status, createdAt])
   @@index([projectId, status])
+  @@index([requestedByUserId])
   @@index([externalJobId])
   @@map("video_jobs")
 }
