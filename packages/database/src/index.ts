@@ -3,6 +3,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { config } from "dotenv";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { normalizeDatabaseUrl } from "./database-url.js";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -14,7 +15,9 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is required to initialize Prisma.");
 }
 
-const adapter = new PrismaPg({ connectionString });
+const adapter = new PrismaPg({
+  connectionString: normalizeDatabaseUrl(connectionString),
+});
 
 export { Prisma, PrismaClient };
 export const prisma = new PrismaClient({ adapter });

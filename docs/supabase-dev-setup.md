@@ -30,17 +30,20 @@ DATABASE_URL=
 Esses valores ficam no dashboard do Supabase em **Project Settings**.
 
 Para desenvolvimento compartilhado entre maquinas diferentes, use a connection string
-do **Transaction pooler** em vez da conexao direta. A conexao direta pode depender de
-IPv6, enquanto o pooler e IPv4 compatible.
+do **Session pooler** em vez da conexao direta. A conexao direta pode depender de
+IPv6, enquanto o pooler e IPv4 compatible, e o Session pooler tambem funciona melhor
+com Prisma Migrate.
 
 Formato usado neste projeto:
 
 ```env
-DATABASE_URL=postgresql://postgres.irbztuvwjxyrcdzrwrwq:[YOUR-PASSWORD]@aws-1-sa-east-1.pooler.supabase.com:6543/postgres?schema=public
+DATABASE_URL=postgresql://postgres.irbztuvwjxyrcdzrwrwq:[YOUR-PASSWORD]@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?schema=public&sslmode=no-verify
 ```
 
 Substitua `[YOUR-PASSWORD]` pela senha do banco do Supabase. Se a senha tiver
 caracteres especiais como `@`, `#`, `%`, `/` ou `:`, ela precisa ser URL-encoded.
+Mantenha `sslmode=no-verify` no pooler do Supabase para evitar erro de cadeia
+de certificado no cliente Node/Prisma em ambiente de desenvolvimento.
 
 ## Login da CLI
 
