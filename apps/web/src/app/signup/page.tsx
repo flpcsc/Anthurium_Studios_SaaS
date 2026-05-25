@@ -2,6 +2,7 @@
 
 import { UserPlus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { FormEvent, ReactNode } from "react";
 import { useState } from "react";
 import { AuthShell } from "@/components/auth-shell";
@@ -11,6 +12,7 @@ import { signUp } from "@/lib/api";
 import { saveSession } from "@/lib/session";
 
 export default function SignupPage(): ReactNode {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [organizationName, setOrganizationName] = useState("");
   const [email, setEmail] = useState("");
@@ -33,19 +35,22 @@ export default function SignupPage(): ReactNode {
         organizationName: organizationName || undefined,
       });
 
-      if (response.data.session.accessToken) {
-        saveSession({
-          accessToken: response.data.session.accessToken,
-          refreshToken: response.data.session.refreshToken,
-          expiresIn: response.data.session.expiresIn,
-          tokenType: response.data.session.tokenType,
-        });
+      if (!response.data.session.accessToken) {
+        setSuccess("Conta criada. Verifique seu email para confirmar o acesso.");
+        return;
       }
 
-      setSuccess("Conta criada. O dashboard entra na proxima etapa.");
+      saveSession({
+        accessToken: response.data.session.accessToken,
+        refreshToken: response.data.session.refreshToken,
+        expiresIn: response.data.session.expiresIn,
+        tokenType: response.data.session.tokenType,
+      });
+      setSuccess("Conta criada. Redirecionando...");
+      router.push("/dashboard");
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "Nao foi possivel criar a conta.",
+        requestError instanceof Error ? requestError.message : "Não foi possível criar a conta.",
       );
     } finally {
       setIsSubmitting(false);

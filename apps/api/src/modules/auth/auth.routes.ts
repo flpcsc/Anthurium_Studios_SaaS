@@ -210,6 +210,23 @@ export async function registerAuthRoutes(
     return reply.status(204).send();
   });
 
+  server.post("/auth/sync", { preHandler: requireAuth }, async (request) => {
+    const currentUser = requireCurrentUser(request);
+    const workspace = await ensureUserWorkspace({
+      id: currentUser.id,
+      email: currentUser.email,
+      name: currentUser.name ?? undefined,
+    });
+
+    return {
+      data: {
+        user: workspace.user,
+        organization: workspace.organization,
+        role: workspace.role,
+      },
+    };
+  });
+
   server.post("/auth/forgot-password", async (request, reply) => {
     const body = asRecord(request.body);
     const email = requiredString(body, "email").toLowerCase();

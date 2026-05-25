@@ -2,6 +2,7 @@
 
 import { ExternalLink, LogIn } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { FormEvent, ReactNode } from "react";
 import { useState } from "react";
 import { AuthShell } from "@/components/auth-shell";
@@ -12,6 +13,7 @@ import { saveSession } from "@/lib/session";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
 
 export default function LoginPage(): ReactNode {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export default function LoginPage(): ReactNode {
       const response = await login({ email, password });
 
       if (!response.data.session.accessToken) {
-        setSuccess("Login aceito. Confirme sua sessao pelo email, se necessario.");
+        setSuccess("Login aceito. Confirme sua sessão pelo email, se necessário.");
         return;
       }
 
@@ -38,9 +40,10 @@ export default function LoginPage(): ReactNode {
         expiresIn: response.data.session.expiresIn,
         tokenType: response.data.session.tokenType,
       });
-      setSuccess("Sessao iniciada. O dashboard entra na proxima etapa.");
+      setSuccess("Sessão iniciada. Redirecionando...");
+      router.push("/dashboard");
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Nao foi possivel entrar.");
+      setError(requestError instanceof Error ? requestError.message : "Não foi possível entrar.");
     } finally {
       setIsSubmitting(false);
     }
@@ -48,22 +51,31 @@ export default function LoginPage(): ReactNode {
 
   async function handleGoogleLogin(): Promise<void> {
     setError(null);
-    const supabase = createSupabaseBrowserClient();
 
-    if (!supabase) {
-      setError("Configure as variaveis publicas do Supabase para usar Google.");
-      return;
-    }
+    try {
+      const supabase = createSupabaseBrowserClient();
 
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+      if (!supabase) {
+        setError("Configure as variáveis públicas do Supabase para usar Google.");
+        return;
+      }
 
-    if (oauthError) {
-      setError(oauthError.message);
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (oauthError) {
+        setError(oauthError.message);
+      }
+    } catch (oauthRequestError) {
+      setError(
+        oauthRequestError instanceof Error
+          ? oauthRequestError.message
+          : "Não foi possível iniciar login com Google.",
+      );
     }
   }
 

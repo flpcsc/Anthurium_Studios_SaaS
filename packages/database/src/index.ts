@@ -1,9 +1,9 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { Prisma, PrismaClient } from "@prisma/client";
 import { config } from "dotenv";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizeDatabaseUrl } from "./database-url.js";
+import { Prisma, PrismaClient } from "./generated/prisma/client.js";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 

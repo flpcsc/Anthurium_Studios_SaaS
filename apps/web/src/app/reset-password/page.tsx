@@ -2,12 +2,14 @@
 
 import { KeyRound } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { AuthShell } from "@/components/auth-shell";
 import { FormField } from "@/components/form-field";
 import { Notice } from "@/components/notice";
 import { resetPassword } from "@/lib/api";
+import { createSupabaseBrowserClient } from "@/lib/supabase";
 
 function getRecoveryAccessToken(): string {
   const queryParams = new URLSearchParams(window.location.search);
@@ -17,6 +19,7 @@ function getRecoveryAccessToken(): string {
 }
 
 export default function ResetPasswordPage(): ReactNode {
+  const router = useRouter();
   const [accessToken, setAccessToken] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +27,25 @@ export default function ResetPasswordPage(): ReactNode {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setAccessToken(getRecoveryAccessToken());
+    async function loadAccessToken(): Promise<void> {
+      const tokenFromUrl = getRecoveryAccessToken();
+
+      if (tokenFromUrl) {
+        setAccessToken(tokenFromUrl);
+        return;
+      }
+
+      const supabase = createSupabaseBrowserClient();
+
+      if (!supabase) {
+        return;
+      }
+
+      const { data } = await supabase.auth.getSession();
+      setAccessToken(data.session?.access_token ?? "");
+    }
+
+    void loadAccessToken();
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -39,12 +60,15 @@ export default function ResetPasswordPage(): ReactNode {
       }
 
       await resetPassword({ accessToken, password });
-      setSuccess("Senha redefinida. Voce ja pode entrar com a nova senha.");
+      setSuccess("Senha redefinida. Redirecionando para o login...");
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (requestError) {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Nao foi possivel redefinir a senha.",
+          : "Não foi possível redefinir a senha.",
       );
     } finally {
       setIsSubmitting(false);

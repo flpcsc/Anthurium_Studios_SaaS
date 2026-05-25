@@ -43,22 +43,30 @@ export function createRequireAuth(authClient: SupabaseAuthClient) {
         throw new HttpError(401, "UNAUTHORIZED", "Invalid auth token.");
       }
 
-      const user = await prisma.user.upsert({
+      // Prefer a read-only lookup on hot path; only upsert if the user row
+      // doesn't exist yet (e.g. first OAuth callback before /auth/sync runs).
+      let user = await prisma.user.findUnique({
         where: { id: supabaseUser.id },
-        update: { email: supabaseUser.email },
-        create: {
-          id: supabaseUser.id,
-          email: supabaseUser.email,
-          name:
-            typeof supabaseUser.user_metadata?.name === "string"
-              ? supabaseUser.user_metadata.name
-              : null,
-          avatarUrl:
-            typeof supabaseUser.user_metadata?.avatar_url === "string"
-              ? supabaseUser.user_metadata.avatar_url
-              : null,
-        },
       });
+
+      if (!user) {
+        user = await prisma.user.upsert({
+          where: { id: supabaseUser.id },
+          update: { email: supabaseUser.email },
+          create: {
+            id: supabaseUser.id,
+            email: supabaseUser.email,
+            name:
+              typeof supabaseUser.user_metadata?.name === "string"
+                ? supabaseUser.user_metadata.name
+                : null,
+            avatarUrl:
+              typeof supabaseUser.user_metadata?.avatar_url === "string"
+                ? supabaseUser.user_metadata.avatar_url
+                : null,
+          },
+        });
+      }
 
       request.currentUser = {
         id: user.id,

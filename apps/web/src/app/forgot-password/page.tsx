@@ -28,7 +28,7 @@ export default function ForgotPasswordPage(): ReactNode {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "Nao foi possivel solicitar a recuperacao.",
+          : "Não foi possível solicitar a recuperação.",
       );
     } finally {
       setIsSubmitting(false);
